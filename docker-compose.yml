@@ -1,0 +1,97 @@
+version: '3'
+
+networks:
+  hadoop36:
+    external:
+      name: hadoop36
+
+services:
+  hdfsnamenode:
+    image: koichiroiijima/hadoop:20191104
+    domainname: hadoop36
+    hostname: hdfsnamenode
+    networks:
+      - hadoop36
+    volumes:
+      - ./etc:/opt/hadoop/etc:z
+    container_name: 'hdfsnamenode'
+    ports:
+      - "9870:9870"
+      - "9871:9871"
+      - "9000:9000"
+      - "9868:9868"
+      - "9869:9869"
+      - "8485:8485"
+      - "8480:8480"
+      - "8481:8481"
+      - "50200:50200"
+    command: ["/opt/entrypoint_namenode.sh"]
+  
+  hdfsdatanode1:
+    image: koichiroiijima/hadoop:20191104
+    domainname: hadoop36
+    hostname: hdfsdatanode1
+    networks:
+      - hadoop36   
+    volumes:
+      - ./etc/:/opt/hadoop/etc:z
+    container_name: 'hdfsdatanode1'
+    depends_on:
+      - hdfsnamenode
+    ports:
+      - "9864:9864"
+      - "9865:9865"
+      - "9866:9866"
+      - "9867:9867"
+    command: ["/opt/entrypoint_datanode.sh"]
+
+  yarnresourcemanager:
+    image: koichiroiijima/hadoop:20191104
+    domainname: hadoop36
+    hostname: yarnresourcemanager
+    networks:
+      - hadoop36
+    volumes:
+      - ./etc/:/opt/hadoop/etc:z
+    container_name: 'yarnresourcemanager'
+    depends_on:
+      - hdfsnamenode
+    ports:
+      - "8032:8032"
+      - "8030:8030"
+      - "8088:8088"
+      - "8090:8090"
+      - "8031:8031"
+      - "8033:8033"
+    command: ["/opt/entrypoint_resourcemanager.sh"]
+
+  yarnnodemanager1:
+    image: koichiroiijima/hadoop:20191104
+    domainname: hadoop36
+    hostname: yarnnodemanager1
+    networks:
+      - hadoop36
+    volumes:
+      - ./etc/:/opt/hadoop/etc:z
+    container_name: 'yarnnodemanager1'
+    depends_on:
+      - yarnresourcemanager
+    ports:
+      - "8040:8040"
+      - "8042:8042"
+      - "8044:8044"
+    command: ["/opt/entrypoint_nodemanager.sh"]
+  
+#  yarnnodemanager2:
+#    image: koichiroiijima/hadoop:20191104
+#    domainname: hadoop36
+#    hostname: yarnnodemanager2
+#    networks:
+#      - hadoop36
+#    volumes:
+#      - ./etc/:/opt/hadoop/etc:z
+#    container_name: 'yarnnodemanager2'
+#    depends_on:
+#      - yarnresourcemanager
+#    ports:
+#      - "28042:8042":
